@@ -1,0 +1,10 @@
+/* Emoji picker style - inherits from colors.rasi */
+@import "~/.config/rofi/colors.rasi"
+
+window {
+    width: 400px;
+}
+
+listview {
+    lines: 10;
+}

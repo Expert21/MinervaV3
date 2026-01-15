@@ -1,0 +1,73 @@
+#!/bin/bash
+# =============================================================================
+# Minerva V3 — Power Menu
+# =============================================================================
+# Rofi power menu with mode switching, lock, logout, reboot, shutdown.
+# Ported from Cybrland with mode switch addition.
+# =============================================================================
+
+uptime="$(uptime -p | sed -e 's/up //g')"
+current_mode=$(cat "$HOME/.current-mode" 2>/dev/null | tr -d '[:space:]')
+
+# Icons
+shutdown='󰐥 Shutdown'
+reboot='󰜉 Reboot'
+lock=' Lock'
+suspend='󰤄 Sleep'
+logout='󰍃 Logout'
+switch="󱎘 Switch to $([ "$current_mode" == "arcana" ] && echo "Ghost" || echo "Arcana")"
+yes='󰸞'
+no='󱎘'
+
+rofi_cmd() {
+    rofi -dmenu \
+        -p "Power" \
+        -mesg "Uptime: $uptime | Mode: $current_mode" \
+        -theme ~/.config/rofi/scripts/powermenu/style.rasi
+}
+
+confirm_cmd() {
+    rofi -theme-str 'window {location: center; anchor: center; fullscreen: false; width: 15%;}' \
+        -theme-str 'mainbox {children: [ "message", "listview" ];}' \
+        -theme-str 'listview {columns: 2; lines: 1;}' \
+        -theme-str 'element-text {horizontal-align: 0.5;}' \
+        -theme-str 'textbox {horizontal-align: 0.5;}' \
+        -dmenu \
+        -p 'Confirm?' \
+        -mesg 'Are you sure?' \
+        -theme ~/.config/rofi/scripts/powermenu/style.rasi
+}
+
+confirm_exit() {
+    echo -e "$yes\n$no" | confirm_cmd
+}
+
+run_rofi() {
+    echo -e "$lock\n$suspend\n$switch\n$logout\n$reboot\n$shutdown" | rofi_cmd
+}
+
+run_cmd() {
+    selected="$(confirm_exit)"
+    if [[ "$selected" == "$yes" ]]; then
+        case $1 in
+            --shutdown) systemctl poweroff ;;
+            --reboot) systemctl reboot ;;
+            --suspend) systemctl suspend ;;
+            --logout) hyprctl dispatch exit ;;
+            --lock) hyprlock ;;
+        esac
+    fi
+}
+
+# Main
+chosen="$(run_rofi)"
+[[ -z "$chosen" ]] && exit 0
+
+case "$chosen" in
+    *Shutdown*) run_cmd --shutdown ;;
+    *Reboot*) run_cmd --reboot ;;
+    *Lock*) hyprlock ;;
+    *Sleep*) run_cmd --suspend ;;
+    *Logout*) run_cmd --logout ;;
+    *Switch*) ~/.config/hypr/scripts/switch-mode.sh ;;
+esac

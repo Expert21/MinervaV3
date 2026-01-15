@@ -1,0 +1,62 @@
+#!/bin/bash
+# =============================================================================
+# Minerva V3 — Emoji Picker
+# =============================================================================
+# Rofi-based emoji picker using cliphist for clipboard integration.
+# =============================================================================
+
+# Emoji list (add more as needed)
+EMOJIS="😀 Grinning Face
+😂 Face with Tears of Joy
+🥹 Face Holding Back Tears
+😍 Heart Eyes
+🤔 Thinking Face
+😎 Smiling Face with Sunglasses
+🥳 Partying Face
+😴 Sleeping Face
+🤖 Robot
+👻 Ghost
+💀 Skull
+🔥 Fire
+⭐ Star
+💎 Gem
+🚀 Rocket
+💻 Laptop
+🖥️ Desktop
+⌨️ Keyboard
+🔒 Lock
+🔓 Unlock
+🛡️ Shield
+⚡ Lightning
+🌙 Moon
+☀️ Sun
+🌈 Rainbow
+❤️ Red Heart
+💜 Purple Heart
+💙 Blue Heart
+💚 Green Heart
+🖤 Black Heart
+✅ Check Mark
+❌ Cross Mark
+⚠️ Warning
+ℹ️ Info
+🎵 Music
+🎮 Game
+📁 Folder
+📝 Note
+📌 Pin
+🔗 Link
+👍 Thumbs Up
+👎 Thumbs Down
+👋 Wave
+🤝 Handshake
+🙏 Folded Hands"
+
+# Show rofi menu
+SELECTED=$(echo "$EMOJIS" | rofi -dmenu -p "Emoji" -theme ~/.config/rofi/scripts/emoji/style.rasi | cut -d ' ' -f1)
+
+if [[ -n "$SELECTED" ]]; then
+    # Copy to clipboard
+    echo -n "$SELECTED" | wl-copy
+    notify-send "Emoji Copied" "$SELECTED" -t 1500
+fi

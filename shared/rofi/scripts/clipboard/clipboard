@@ -1,0 +1,14 @@
+#!/bin/bash
+# =============================================================================
+# Minerva V3 — Clipboard Manager
+# =============================================================================
+# Rofi-based clipboard history using cliphist.
+# =============================================================================
+
+# Get clipboard history from cliphist and display in rofi
+SELECTED=$(cliphist list | rofi -dmenu -p "Clipboard" -theme ~/.config/rofi/scripts/clipboard/style.rasi)
+
+if [[ -n "$SELECTED" ]]; then
+    # Decode and copy back to clipboard
+    echo "$SELECTED" | cliphist decode | wl-copy
+fi

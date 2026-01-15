@@ -1,0 +1,79 @@
+{
+    // ==========================================================================
+    // Minerva V3 — Waybar Config (Ghost Mode)
+    // Position: BOTTOM
+    // ==========================================================================
+    "layer": "top",
+    "position": "bottom",
+    "height": 32,
+    "spacing": 4,
+    "margin-bottom": 4,
+    "margin-left": 8,
+    "margin-right": 8,
+    // === MODULES (Minimal for focus) ===
+    "modules-left": [
+        "hyprland/workspaces"
+    ],
+    "modules-center": [
+        "clock"
+    ],
+    "modules-right": [
+        "custom/vpn",
+        "network",
+        "pulseaudio",
+        "tray",
+        "custom/power"
+    ],
+    // === WORKSPACES (Ghost: numbered, minimal) ===
+    "hyprland/workspaces": {
+        "format": "{id}",
+        "on-click": "activate",
+        "sort-by-number": true
+    },
+    // === CLOCK ===
+    "clock": {
+        "format": "{:%H:%M:%S}",
+        "interval": 1,
+        "tooltip-format": "{:%Y-%m-%d %A}"
+    },
+    // === VPN STATUS ===
+    "custom/vpn": {
+        "format": "{}",
+        "exec": "~/.config/waybar/scripts/vpn-status.sh",
+        "interval": 10,
+        "return-type": "json",
+        "on-click": "protonvpn-cli d && notify-send 'VPN' 'Disconnected'"
+    },
+    // === NETWORK ===
+    "network": {
+        "format-wifi": "󰤨",
+        "format-ethernet": "󰈀 {ipaddr}",
+        "format-disconnected": "󰤭",
+        "tooltip-format": "{ifname}: {ipaddr}\n{essid} ({signalStrength}%)"
+    },
+    // === PULSEAUDIO ===
+    "pulseaudio": {
+        "format": "{icon}",
+        "format-muted": "󰝟",
+        "format-icons": {
+            "default": [
+                "󰕿",
+                "󰖀",
+                "󰕾"
+            ]
+        },
+        "tooltip-format": "Volume: {volume}%",
+        "on-click": "pavucontrol"
+    },
+    // === TRAY ===
+    "tray": {
+        "icon-size": 14,
+        "spacing": 6
+    },
+    // === POWER ===
+    "custom/power": {
+        "format": "󰐥",
+        "tooltip": false,
+        "on-click": "~/.config/rofi/scripts/powermenu/powermenu"
+    }
+}

@@ -1,0 +1,21 @@
+/* Power menu style - inherits from colors.rasi */
+@import "~/.config/rofi/colors.rasi"
+
+window {
+    width: 300px;
+    location: center;
+    anchor: center;
+}
+
+listview {
+    lines: 6;
+    spacing: 8px;
+}
+
+element {
+    padding: 14px 16px;
+}
+
+element-text {
+    font: "JetBrains Mono 14";
+}
