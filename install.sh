@@ -29,6 +29,100 @@ for dir in hypr waybar rofi swaync wezterm yazi micro; do
     fi
 done
 
+# === Install Packages ===
+echo ""
+echo "📦 Installing required packages..."
+
+# Pacman packages (official repos)
+PACMAN_PKGS=(
+    # Core Hyprland
+    hyprland xdg-desktop-portal-hyprland
+    # Terminal & Shell
+    wezterm zsh starship
+    # Launcher & Menus
+    rofi-wayland
+    # File Managers
+    yazi
+    # Clipboard
+    wl-clipboard cliphist
+    # Authentication
+    polkit-gnome
+    # Audio
+    pipewire wireplumber pavucontrol
+    # Network
+    networkmanager nm-connection-editor
+    # System Utilities
+    brightnessctl qt6ct
+    # Text Editor
+    micro
+    # Fonts
+    ttf-jetbrains-mono ttf-font-awesome nerd-fonts
+    # Build utilities
+    gettext
+)
+
+# AUR packages
+AUR_PKGS=(
+    # Bar & Notifications
+    waybar swaync
+    # Wallpaper
+    swww
+    # Lock & Idle
+    hyprlock hypridle
+    # Screenshots
+    hyprshot swappy
+)
+
+# Optional packages (prompt user)
+AUR_OPTIONAL=(
+    protonvpn-cli   # VPN for Ghost mode
+    burpsuite       # Pentesting for Ghost mode
+)
+
+# Install pacman packages
+echo ""
+echo "📥 Installing official packages..."
+for pkg in "${PACMAN_PKGS[@]}"; do
+    if ! pacman -Qi "$pkg" &>/dev/null; then
+        echo "  → Installing $pkg..."
+        sudo pacman -S --noconfirm --needed "$pkg" || echo "  ⚠ Failed to install $pkg"
+    else
+        echo "  ✓ $pkg already installed"
+    fi
+done
+
+# Install AUR packages
+echo ""
+echo "📥 Installing AUR packages..."
+for pkg in "${AUR_PKGS[@]}"; do
+    if ! pacman -Qi "$pkg" &>/dev/null; then
+        echo "  → Installing $pkg..."
+        yay -S --noconfirm --needed "$pkg" || echo "  ⚠ Failed to install $pkg"
+    else
+        echo "  ✓ $pkg already installed"
+    fi
+done
+
+# Optional packages prompt
+echo ""
+read -p "🔧 Install optional packages (ProtonVPN, Burpsuite)? [y/N] " -n 1 -r
+echo ""
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    for pkg in "${AUR_OPTIONAL[@]}"; do
+        if ! pacman -Qi "$pkg" &>/dev/null; then
+            echo "  → Installing $pkg..."
+            yay -S --noconfirm --needed "$pkg" || echo "  ⚠ Failed to install $pkg"
+        else
+            echo "  ✓ $pkg already installed"
+        fi
+    done
+fi
+
+echo ""
+echo "✅ Package installation complete!"
+
+
+
 # === CREATE CONFIG DIRECTORIES ===
 echo ""
 echo "📁 Creating config directories..."
