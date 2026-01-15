@@ -1,10 +1,9 @@
+#!/bin/bash
 # =============================================================================
 # Minerva V3 — Wallpaper Script
 # =============================================================================
 # Applies wallpaper using swww with smooth transitions
 # =============================================================================
-
-#!/bin/bash
 
 WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
 CURRENT_MODE=$(cat "$HOME/.current-mode" 2>/dev/null | tr -d '[:space:]')

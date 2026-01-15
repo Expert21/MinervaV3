@@ -44,8 +44,13 @@ export ACCENT_RAW=$(strip_hash "$ACCENT")
 export SUCCESS_RAW=$(strip_hash "$SUCCESS")
 export ERROR_RAW=$(strip_hash "$ERROR")
 
-# Determine theme directory
-THEME_DIR="$SCRIPT_DIR/themes/$MODE"
+# Determine theme directory (themes are in ~/.config/hypr/themes/)
+THEME_DIR="$HOME/.config/hypr/themes/$MODE"
+
+# Ensure theme subdirectories exist
+mkdir -p "$THEME_DIR/waybar"
+mkdir -p "$THEME_DIR/swaync"
+mkdir -p "$THEME_DIR/rofi"
 
 # Generate Hyprland colors
 if [[ -f "$TEMPLATES_DIR/hyprland-colors.conf.tpl" ]]; then

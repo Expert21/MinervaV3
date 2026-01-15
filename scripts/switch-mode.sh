@@ -49,6 +49,14 @@ SWAYNC_CONFIG="$HOME/.config/swaync"
 mkdir -p "$SWAYNC_CONFIG"
 ln -sf "$CONFIG_DIR/themes/$NEW_MODE/swaync/style.css" "$SWAYNC_CONFIG/style.css"
 
+# Symlink rofi colors
+ROFI_CONFIG="$HOME/.config/rofi"
+mkdir -p "$ROFI_CONFIG"
+ln -sf "$CONFIG_DIR/themes/$NEW_MODE/rofi/colors.rasi" "$ROFI_CONFIG/colors.rasi"
+
+# Update wallpaper
+"$SCRIPT_DIR/wallpaper.sh"
+
 # Restart waybar
 killall waybar 2>/dev/null || true
 waybar &

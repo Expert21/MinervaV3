@@ -18,12 +18,42 @@ echo "║                  Dual-Mode Hyprland Rice                          ║"
 echo "╚══════════════════════════════════════════════════════════════════╝"
 echo ""
 
+# === VALIDATE SOURCE FILES ===
+echo "🔍 Validating source files..."
+MISSING_FILES=0
+
+check_exists() {
+    if [[ ! -e "$1" ]]; then
+        echo "  ✗ Missing: $1"
+        MISSING_FILES=1
+    fi
+}
+
+check_exists "$SCRIPT_DIR/colors/arcana.sh"
+check_exists "$SCRIPT_DIR/colors/ghost.sh"
+check_exists "$SCRIPT_DIR/templates"
+check_exists "$SCRIPT_DIR/shared/hyprland"
+check_exists "$SCRIPT_DIR/themes/arcana/hyprland.conf"
+check_exists "$SCRIPT_DIR/themes/ghost/hyprland.conf"
+check_exists "$SCRIPT_DIR/scripts"
+check_exists "$SCRIPT_DIR/shared/rofi/config.rasi"
+check_exists "$SCRIPT_DIR/shared/wezterm/wezterm.lua"
+check_exists "$SCRIPT_DIR/generate-themes.sh"
+
+if [[ $MISSING_FILES -eq 1 ]]; then
+    echo ""
+    echo "❌ Some source files are missing. Please check your Minerva V3 installation."
+    exit 1
+fi
+echo "  ✓ All source files present"
+
 # === BACKUP EXISTING CONFIGS ===
+echo ""
 echo "📦 Backing up existing configs to $BACKUP_DIR..."
 mkdir -p "$BACKUP_DIR"
 
-for dir in hypr waybar rofi swaync wezterm yazi micro; do
-    if [[ -d "$CONFIG_DIR/$dir" ]]; then
+for dir in hypr waybar rofi swaync wezterm yazi micro starship.toml; do
+    if [[ -e "$CONFIG_DIR/$dir" ]]; then
         cp -r "$CONFIG_DIR/$dir" "$BACKUP_DIR/" 2>/dev/null || true
         echo "  ✓ Backed up $dir"
     fi
@@ -121,87 +151,250 @@ fi
 echo ""
 echo "✅ Package installation complete!"
 
-
-
 # === CREATE CONFIG DIRECTORIES ===
 echo ""
 echo "📁 Creating config directories..."
-mkdir -p "$CONFIG_DIR/hypr/themes/arcana"
-mkdir -p "$CONFIG_DIR/hypr/themes/ghost"
+mkdir -p "$CONFIG_DIR/hypr/themes/arcana/waybar"
+mkdir -p "$CONFIG_DIR/hypr/themes/arcana/rofi"
+mkdir -p "$CONFIG_DIR/hypr/themes/arcana/swaync"
+mkdir -p "$CONFIG_DIR/hypr/themes/ghost/waybar"
+mkdir -p "$CONFIG_DIR/hypr/themes/ghost/rofi"
+mkdir -p "$CONFIG_DIR/hypr/themes/ghost/swaync"
 mkdir -p "$CONFIG_DIR/hypr/shared"
 mkdir -p "$CONFIG_DIR/hypr/scripts"
 mkdir -p "$CONFIG_DIR/waybar"
 mkdir -p "$CONFIG_DIR/rofi/scripts"
 mkdir -p "$CONFIG_DIR/swaync"
 mkdir -p "$CONFIG_DIR/wezterm"
+mkdir -p "$CONFIG_DIR/micro"
+mkdir -p "$CONFIG_DIR/yazi"
 mkdir -p "$CONFIG_DIR/minerva-v3/colors"
+mkdir -p "$CONFIG_DIR/minerva-v3/templates"
 mkdir -p "$CONFIG_DIR/minerva-v3/notes"
 mkdir -p "$HOME/Pictures/Wallpapers"
+echo "  ✓ Config directories created"
 
-# === COPY MINERVA V3 FILES ===
+# === COPY MINERVA V3 CORE FILES ===
 echo ""
-echo "🎨 Installing Minerva V3..."
+echo "🎨 Installing Minerva V3 core files..."
 
-# Colors and generator
-cp -r "$SCRIPT_DIR/colors" "$CONFIG_DIR/minerva-v3/"
+# Colors
+echo "  → Copying color definitions..."
+cp "$SCRIPT_DIR/colors/arcana.sh" "$CONFIG_DIR/minerva-v3/colors/"
+cp "$SCRIPT_DIR/colors/ghost.sh" "$CONFIG_DIR/minerva-v3/colors/"
+if [[ -f "$SCRIPT_DIR/colors/colors.sh" ]]; then
+    cp "$SCRIPT_DIR/colors/colors.sh" "$CONFIG_DIR/minerva-v3/colors/"
+fi
+echo "  ✓ Color definitions"
+
+# Generator script
 cp "$SCRIPT_DIR/generate-themes.sh" "$CONFIG_DIR/minerva-v3/"
 chmod +x "$CONFIG_DIR/minerva-v3/generate-themes.sh"
+echo "  ✓ Theme generator"
 
 # Templates
-cp -r "$SCRIPT_DIR/templates" "$CONFIG_DIR/minerva-v3/"
+echo "  → Copying templates..."
+cp -r "$SCRIPT_DIR/templates/"* "$CONFIG_DIR/minerva-v3/templates/"
+echo "  ✓ Templates"
+
+# === COPY SHARED CONFIGS ===
+echo ""
+echo "📋 Installing shared configurations..."
 
 # Shared Hyprland configs
-cp -r "$SCRIPT_DIR/shared/hyprland/"* "$CONFIG_DIR/hypr/shared/"
+echo "  → Copying shared Hyprland configs..."
+cp "$SCRIPT_DIR/shared/hyprland/"*.conf "$CONFIG_DIR/hypr/shared/"
+echo "  ✓ Hyprland shared configs (execs, input, keybinds, rules)"
 
-# Mode-specific configs
-cp -r "$SCRIPT_DIR/themes/arcana/"* "$CONFIG_DIR/hypr/themes/arcana/"
-cp -r "$SCRIPT_DIR/themes/ghost/"* "$CONFIG_DIR/hypr/themes/ghost/"
+# Rofi config
+echo "  → Copying Rofi config..."
+cp "$SCRIPT_DIR/shared/rofi/config.rasi" "$CONFIG_DIR/rofi/"
+if [[ -d "$SCRIPT_DIR/shared/rofi/scripts" ]]; then
+    cp -r "$SCRIPT_DIR/shared/rofi/scripts/"* "$CONFIG_DIR/rofi/scripts/" 2>/dev/null || true
+    find "$CONFIG_DIR/rofi/scripts" -type f -exec chmod +x {} \; 2>/dev/null || true
+fi
+echo "  ✓ Rofi config and scripts"
 
-# Scripts
+# WezTerm config
+echo "  → Copying WezTerm config..."
+cp "$SCRIPT_DIR/shared/wezterm/wezterm.lua" "$CONFIG_DIR/wezterm/"
+echo "  ✓ WezTerm config"
+
+# Micro config (if exists)
+if [[ -d "$SCRIPT_DIR/shared/micro" ]]; then
+    echo "  → Copying Micro config..."
+    cp -r "$SCRIPT_DIR/shared/micro/"* "$CONFIG_DIR/micro/"
+    echo "  ✓ Micro config"
+fi
+
+# Yazi config (if exists)
+if [[ -d "$SCRIPT_DIR/shared/yazi" ]]; then
+    echo "  → Copying Yazi config..."
+    cp -r "$SCRIPT_DIR/shared/yazi/"* "$CONFIG_DIR/yazi/"
+    echo "  ✓ Yazi config"
+fi
+
+# Starship config (if exists)
+if [[ -f "$SCRIPT_DIR/shared/starship.toml" ]]; then
+    echo "  → Copying Starship config..."
+    cp "$SCRIPT_DIR/shared/starship.toml" "$CONFIG_DIR/starship.toml"
+    echo "  ✓ Starship config"
+fi
+
+# === COPY THEME-SPECIFIC CONFIGS ===
+echo ""
+echo "🎭 Installing theme configurations..."
+
+# === ARCANA THEME ===
+echo "  → Installing Arcana theme..."
+cp "$SCRIPT_DIR/themes/arcana/hyprland.conf" "$CONFIG_DIR/hypr/themes/arcana/"
+
+if [[ -f "$SCRIPT_DIR/themes/arcana/waybar/config.jsonc" ]]; then
+    cp "$SCRIPT_DIR/themes/arcana/waybar/config.jsonc" "$CONFIG_DIR/hypr/themes/arcana/waybar/"
+fi
+
+if [[ -f "$SCRIPT_DIR/themes/arcana/swaync/config.json" ]]; then
+    cp "$SCRIPT_DIR/themes/arcana/swaync/config.json" "$CONFIG_DIR/hypr/themes/arcana/swaync/"
+fi
+
+echo "  ✓ Arcana theme base files"
+
+# === GHOST THEME ===
+echo "  → Installing Ghost theme..."
+cp "$SCRIPT_DIR/themes/ghost/hyprland.conf" "$CONFIG_DIR/hypr/themes/ghost/"
+
+if [[ -f "$SCRIPT_DIR/themes/ghost/waybar/config.jsonc" ]]; then
+    cp "$SCRIPT_DIR/themes/ghost/waybar/config.jsonc" "$CONFIG_DIR/hypr/themes/ghost/waybar/"
+fi
+
+if [[ -f "$SCRIPT_DIR/themes/ghost/swaync/config.json" ]]; then
+    cp "$SCRIPT_DIR/themes/ghost/swaync/config.json" "$CONFIG_DIR/hypr/themes/ghost/swaync/"
+fi
+
+if [[ -d "$SCRIPT_DIR/themes/ghost/waybar/scripts" ]]; then
+    cp -r "$SCRIPT_DIR/themes/ghost/waybar/scripts" "$CONFIG_DIR/hypr/themes/ghost/waybar/"
+    find "$CONFIG_DIR/hypr/themes/ghost/waybar/scripts" -type f -exec chmod +x {} \; 2>/dev/null || true
+fi
+
+echo "  ✓ Ghost theme base files"
+
+# === SCRIPTS ===
+echo ""
+echo "⚡ Installing scripts..."
 cp "$SCRIPT_DIR/scripts/"*.sh "$CONFIG_DIR/hypr/scripts/"
 chmod +x "$CONFIG_DIR/hypr/scripts/"*.sh
+echo "  ✓ Scripts installed and made executable"
 
-# Rofi
-cp "$SCRIPT_DIR/shared/rofi/config.rasi" "$CONFIG_DIR/rofi/"
-cp -r "$SCRIPT_DIR/shared/rofi/scripts/"* "$CONFIG_DIR/rofi/scripts/"
-chmod +x "$CONFIG_DIR/rofi/scripts/"*/emoji 2>/dev/null || true
-chmod +x "$CONFIG_DIR/rofi/scripts/"*/clipboard 2>/dev/null || true
-chmod +x "$CONFIG_DIR/rofi/scripts/"*/powermenu 2>/dev/null || true
-
-# WezTerm
-cp "$SCRIPT_DIR/shared/wezterm/wezterm.lua" "$CONFIG_DIR/wezterm/"
-
-# swaync
-cp "$SCRIPT_DIR/themes/arcana/swaync/config.json" "$CONFIG_DIR/swaync/"
-
-# === SET DEFAULT MODE ===
+# === SET DEFAULT MODE & GENERATE THEMES ===
 echo ""
 echo "🔮 Setting default mode to Arcana..."
 echo "arcana" > "$HOME/.current-mode"
 cp "$CONFIG_DIR/minerva-v3/colors/arcana.sh" "$CONFIG_DIR/minerva-v3/colors/colors.sh"
+echo "  ✓ Default mode set"
 
 # === GENERATE THEMES ===
 echo ""
-echo "🎨 Generating theme files..."
+echo "🎨 Generating theme files from templates..."
 cd "$CONFIG_DIR/minerva-v3"
-./generate-themes.sh
+if ./generate-themes.sh; then
+    echo "  ✓ Themes generated successfully"
+else
+    echo "  ⚠ Theme generation had issues, trying to continue..."
+fi
+
+# === ALSO GENERATE GHOST THEME ===
+echo ""
+echo "🎨 Generating Ghost theme..."
+cp "$CONFIG_DIR/minerva-v3/colors/ghost.sh" "$CONFIG_DIR/minerva-v3/colors/colors.sh"
+if ./generate-themes.sh; then
+    echo "  ✓ Ghost theme generated"
+else
+    echo "  ⚠ Ghost theme generation had issues"
+fi
+
+# Restore arcana as active
+cp "$CONFIG_DIR/minerva-v3/colors/arcana.sh" "$CONFIG_DIR/minerva-v3/colors/colors.sh"
+echo "arcana" > "$HOME/.current-mode"
+
+# === VERIFY GENERATED FILES ===
+echo ""
+echo "🔍 Verifying generated theme files..."
+VERIFY_PASS=1
+
+verify_file() {
+    if [[ -f "$1" ]]; then
+        echo "  ✓ $2"
+    else
+        echo "  ✗ Missing: $2"
+        VERIFY_PASS=0
+    fi
+}
+
+verify_file "$CONFIG_DIR/hypr/themes/arcana/waybar/style.css" "Arcana Waybar CSS"
+verify_file "$CONFIG_DIR/hypr/themes/arcana/rofi/colors.rasi" "Arcana Rofi colors"
+verify_file "$CONFIG_DIR/hypr/themes/arcana/swaync/style.css" "Arcana swaync CSS"
+verify_file "$CONFIG_DIR/hypr/themes/ghost/waybar/style.css" "Ghost Waybar CSS"
+verify_file "$CONFIG_DIR/hypr/themes/ghost/rofi/colors.rasi" "Ghost Rofi colors"
+verify_file "$CONFIG_DIR/hypr/themes/ghost/swaync/style.css" "Ghost swaync CSS"
+
+if [[ $VERIFY_PASS -eq 0 ]]; then
+    echo ""
+    echo "⚠️  Some theme files were not generated. Check generate-themes.sh output above."
+fi
 
 # === CREATE SYMLINKS ===
 echo ""
-echo "🔗 Creating symlinks..."
+echo "🔗 Creating symlinks for active theme (Arcana)..."
+
+# Remove old symlinks/files first
+rm -f "$CONFIG_DIR/hypr/hyprland.conf"
+rm -f "$CONFIG_DIR/waybar/config.jsonc"
+rm -f "$CONFIG_DIR/waybar/style.css"
+rm -f "$CONFIG_DIR/rofi/colors.rasi"
+rm -f "$CONFIG_DIR/swaync/style.css"
+
+# Create new symlinks
 ln -sf "$CONFIG_DIR/hypr/themes/arcana/hyprland.conf" "$CONFIG_DIR/hypr/hyprland.conf"
-ln -sf "$CONFIG_DIR/hypr/themes/arcana/waybar/config.jsonc" "$CONFIG_DIR/waybar/config.jsonc"
-ln -sf "$CONFIG_DIR/hypr/themes/arcana/waybar/style.css" "$CONFIG_DIR/waybar/style.css"
-ln -sf "$CONFIG_DIR/hypr/themes/arcana/rofi/colors.rasi" "$CONFIG_DIR/rofi/colors.rasi"
-ln -sf "$CONFIG_DIR/hypr/themes/arcana/swaync/style.css" "$CONFIG_DIR/swaync/style.css"
+echo "  ✓ Hyprland config → arcana"
+
+if [[ -f "$CONFIG_DIR/hypr/themes/arcana/waybar/config.jsonc" ]]; then
+    ln -sf "$CONFIG_DIR/hypr/themes/arcana/waybar/config.jsonc" "$CONFIG_DIR/waybar/config.jsonc"
+    echo "  ✓ Waybar config → arcana"
+fi
+
+if [[ -f "$CONFIG_DIR/hypr/themes/arcana/waybar/style.css" ]]; then
+    ln -sf "$CONFIG_DIR/hypr/themes/arcana/waybar/style.css" "$CONFIG_DIR/waybar/style.css"
+    echo "  ✓ Waybar style → arcana"
+fi
+
+if [[ -f "$CONFIG_DIR/hypr/themes/arcana/rofi/colors.rasi" ]]; then
+    ln -sf "$CONFIG_DIR/hypr/themes/arcana/rofi/colors.rasi" "$CONFIG_DIR/rofi/colors.rasi"
+    echo "  ✓ Rofi colors → arcana"
+fi
+
+if [[ -f "$CONFIG_DIR/hypr/themes/arcana/swaync/style.css" ]]; then
+    ln -sf "$CONFIG_DIR/hypr/themes/arcana/swaync/style.css" "$CONFIG_DIR/swaync/style.css"
+    echo "  ✓ swaync style → arcana"
+fi
+
+# Copy swaync config (not symlink - it's shared)
+if [[ -f "$CONFIG_DIR/hypr/themes/arcana/swaync/config.json" ]]; then
+    cp "$CONFIG_DIR/hypr/themes/arcana/swaync/config.json" "$CONFIG_DIR/swaync/config.json"
+    echo "  ✓ swaync config installed"
+fi
 
 # === WALLPAPER PLACEHOLDER ===
+echo ""
+echo "🖼️  Checking wallpapers..."
 if [[ ! -f "$HOME/Pictures/Wallpapers/arcana-wallpaper.jpg" ]]; then
-    echo ""
-    echo "⚠️  No arcana-wallpaper.jpg found. Add one to ~/Pictures/Wallpapers/"
+    echo "  ⚠️  No arcana-wallpaper.jpg found. Add one to ~/Pictures/Wallpapers/"
+else
+    echo "  ✓ Arcana wallpaper found"
 fi
 if [[ ! -f "$HOME/Pictures/Wallpapers/ghost-wallpaper.jpg" ]]; then
-    echo "⚠️  No ghost-wallpaper.jpg found. Add one to ~/Pictures/Wallpapers/"
+    echo "  ⚠️  No ghost-wallpaper.jpg found. Add one to ~/Pictures/Wallpapers/"
+else
+    echo "  ✓ Ghost wallpaper found"
 fi
 
 echo ""
@@ -211,13 +404,16 @@ echo "╚═══════════════════════�
 echo ""
 echo "📋 Next steps:"
 echo "   1. Add wallpapers to ~/Pictures/Wallpapers/"
+echo "      • arcana-wallpaper.jpg"
+echo "      • ghost-wallpaper.jpg"
 echo "   2. Log out and select Hyprland from your display manager"
 echo "   3. Use Super+Shift+G to switch between Arcana and Ghost modes"
 echo ""
 echo "📁 Config locations:"
-echo "   • Colors:  ~/.config/minerva-v3/colors/"
-echo "   • Hyprland: ~/.config/hypr/"
-echo "   • Notes:    ~/.config/minerva-v3/notes/"
+echo "   • Colors:    ~/.config/minerva-v3/colors/"
+echo "   • Hyprland:  ~/.config/hypr/"
+echo "   • Themes:    ~/.config/hypr/themes/{arcana,ghost}/"
+echo "   • Notes:     ~/.config/minerva-v3/notes/"
 echo ""
 echo "🎮 Keybinds:"
 echo "   • Super+Return   → Terminal (WezTerm)"
@@ -225,4 +421,7 @@ echo "   • Super+Tab      → App Launcher (Rofi)"
 echo "   • Super+X        → Power Menu"
 echo "   • Super+N        → Quick Notes"
 echo "   • Super+Shift+G  → Switch Mode"
+echo ""
+echo "🔧 To regenerate themes after color changes:"
+echo "   cd ~/.config/minerva-v3 && ./generate-themes.sh"
 echo ""
