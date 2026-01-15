@@ -125,6 +125,30 @@ for pkg in "${PACMAN_PKGS[@]}"; do
     fi
 done
 
+# === INSTALL YAY (AUR Helper) ===
+echo ""
+echo "📦 Checking for yay (AUR helper)..."
+
+if ! command -v yay &>/dev/null; then
+    echo "  → Installing yay..."
+    
+    # Install base-devel and git if needed
+    sudo pacman -S --noconfirm --needed base-devel git
+    
+    # Clone and build yay
+    TEMP_DIR=$(mktemp -d)
+    cd "$TEMP_DIR"
+    git clone https://aur.archlinux.org/yay.git
+    cd yay
+    makepkg -si --noconfirm
+    cd "$SCRIPT_DIR"
+    rm -rf "$TEMP_DIR"
+    
+    echo "  ✓ yay installed"
+else
+    echo "  ✓ yay already installed"
+fi
+
 # Install AUR packages
 echo ""
 echo "📥 Installing AUR packages..."
