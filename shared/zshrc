@@ -1,0 +1,97 @@
+# =============================================================================
+# Minerva V3 — Zsh Configuration
+# =============================================================================
+# Comprehensive zsh config with oh-my-zsh, starship, and useful plugins.
+# =============================================================================
+
+# === PATH ===
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+
+# === OH-MY-ZSH ===
+export ZSH="$HOME/.oh-my-zsh"
+
+# Plugins (loaded by oh-my-zsh)
+plugins=(
+    git                      # Git aliases and completions
+    sudo                     # Double-ESC to add sudo
+    zsh-autosuggestions      # Fish-like suggestions
+    zsh-syntax-highlighting  # Syntax highlighting
+    extract                  # Universal archive extraction
+    z                        # Smart directory jumping
+    colored-man-pages        # Colorized man pages
+    command-not-found        # Package suggestions
+    encode64                 # Base64 encode/decode
+    jsontools                # JSON manipulation
+)
+
+# Load oh-my-zsh
+source $ZSH/oh-my-zsh.sh
+
+# === STARSHIP PROMPT ===
+eval "$(starship init zsh)"
+
+# === ALIASES ===
+# Listing
+alias ll='ls -lah --color=auto'
+alias la='ls -A --color=auto'
+alias l='ls -CF --color=auto'
+
+# Navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# Editors & Tools
+alias v='micro'
+alias y='yazi'
+
+# Minerva
+alias mode='~/.config/hypr/scripts/switch-mode.sh'
+alias colors='micro ~/.config/minerva-v3/colors/colors.sh'
+alias regen='cd ~/.config/minerva-v3 && ./generate-themes.sh && cd -'
+
+# System
+alias update='sudo pacman -Syu'
+alias cleanup='sudo pacman -Rns $(pacman -Qtdq) 2>/dev/null || echo "Nothing to clean"'
+
+# Safety nets
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+
+# === HISTORY ===
+HISTSIZE=10000
+SAVEHIST=10000
+HISTFILE=~/.zsh_history
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt SHARE_HISTORY
+
+# === AUTOSUGGESTION SETTINGS ===
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+# === KEYBINDINGS ===
+bindkey '^[[A' history-search-backward  # Up arrow
+bindkey '^[[B' history-search-forward   # Down arrow
+bindkey '^[[H' beginning-of-line        # Home
+bindkey '^[[F' end-of-line              # End
+bindkey '^[[3~' delete-char             # Delete
+
+# === MINERVA MODE GREETING ===
+minerva_greeting() {
+    local mode_file="$HOME/.current-mode"
+    if [[ -f "$mode_file" ]]; then
+        local mode=$(cat "$mode_file" | tr -d '[:space:]')
+        if [[ "$mode" == "ghost" ]]; then
+            echo "👻 Ghost Mode — Stay invisible"
+        else
+            echo "🔮 Arcana Mode — Create magic"
+        fi
+    fi
+}
+
+# Show greeting on new shell (interactive only)
+if [[ $- == *i* ]]; then
+    minerva_greeting
+fi

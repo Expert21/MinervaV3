@@ -89,6 +89,8 @@ PACMAN_PKGS=(
     ttf-jetbrains-mono ttf-font-awesome nerd-fonts
     # Build utilities
     gettext
+    # command-not-found support
+    pkgfile
 )
 
 # AUR packages
@@ -101,6 +103,8 @@ AUR_PKGS=(
     hyprlock hypridle
     # Screenshots
     hyprshot swappy
+    # Zsh plugins
+    zsh-autosuggestions zsh-syntax-highlighting
 )
 
 # Optional packages (prompt user)
@@ -150,6 +154,56 @@ fi
 
 echo ""
 echo "✅ Package installation complete!"
+
+# Update pkgfile database (for command-not-found plugin)
+echo ""
+echo "📦 Updating pkgfile database..."
+sudo pkgfile --update
+echo "  ✓ pkgfile database updated"
+
+# === INSTALL OH-MY-ZSH ===
+echo ""
+echo "🐚 Setting up Zsh with Oh-My-Zsh..."
+
+if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+    echo "  → Installing Oh-My-Zsh..."
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    echo "  ✓ Oh-My-Zsh installed"
+else
+    echo "  ✓ Oh-My-Zsh already installed"
+fi
+
+# Link zsh plugins (they install to /usr/share, oh-my-zsh looks in custom/plugins)
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+mkdir -p "$ZSH_CUSTOM/plugins"
+
+if [[ -d "/usr/share/zsh/plugins/zsh-autosuggestions" ]]; then
+    ln -sfn "/usr/share/zsh/plugins/zsh-autosuggestions" "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+    echo "  ✓ Linked zsh-autosuggestions"
+fi
+
+if [[ -d "/usr/share/zsh/plugins/zsh-syntax-highlighting" ]]; then
+    ln -sfn "/usr/share/zsh/plugins/zsh-syntax-highlighting" "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+    echo "  ✓ Linked zsh-syntax-highlighting"
+fi
+
+# Deploy zshrc
+echo "  → Installing .zshrc..."
+if [[ -f "$HOME/.zshrc" ]]; then
+    cp "$HOME/.zshrc" "$BACKUP_DIR/zshrc.backup"
+    echo "  ✓ Backed up existing .zshrc"
+fi
+cp "$SCRIPT_DIR/shared/zshrc" "$HOME/.zshrc"
+echo "  ✓ Installed .zshrc"
+
+# Change default shell to zsh
+if [[ "$SHELL" != *"zsh"* ]]; then
+    echo "  → Setting zsh as default shell..."
+    chsh -s $(which zsh)
+    echo "  ✓ Default shell changed to zsh"
+else
+    echo "  ✓ Zsh is already default shell"
+fi
 
 # === CREATE CONFIG DIRECTORIES ===
 echo ""
