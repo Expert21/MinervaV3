@@ -67,8 +67,8 @@ echo "📦 Installing required packages..."
 PACMAN_PKGS=(
     # Core Hyprland
     hyprland xdg-desktop-portal-hyprland
-    # Terminal & Shell
-    wezterm zsh starship
+    # Shell
+    zsh starship
     # Launcher & Menus
     rofi-wayland
     # File Managers
@@ -105,6 +105,8 @@ AUR_PKGS=(
     hyprshot swappy
     # Zsh plugins
     zsh-autosuggestions zsh-syntax-highlighting
+    # Terminal
+    wezterm-git
 )
 
 # Optional packages (prompt user)
