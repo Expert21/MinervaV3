@@ -42,7 +42,7 @@ Toggle between modes with **`Super + Shift + G`**
 ## 🚀 Installation
 
 ```bash
-git clone https://github.com/YourUsername/Minerva-v3
+git clone https://github.com/Expert21/Minerva-v3
 cd Minerva-v3
 ./install.sh
 ```
